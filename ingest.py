@@ -45,6 +45,81 @@ def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSou
     
     return combined
 
+def unpack_lc_features(table, diaObjectId):
+    """Unpack the column lc_features and return a stitched dataframe for each band given a diaObjectId.
+    
+        Parameters
+        ----------
+        table: pd.DataFrame
+            The input table containing light curve features.
+        diaObjectId: int
+            The diaObjectId for which to unpack the light curve features.
+    """
+
+    select_table = table[table['diaObjectId'] == diaObjectId]
+
+    feature_table_all = pd.DataFrame(columns=['band', 
+                        'amplitude',
+                        'anderson_darling_normal',
+                        'beyond_1_std',
+                        'chi2',
+                        'cusum',
+                        'inter_percentile_range_10',
+                        'kurtosis',
+                        'linear_fit_reduced_chi2',
+                        'linear_fit_slope',
+                        'linear_fit_slope_sigma',
+                        'linear_trend',
+                        'linear_trend_noise',
+                        'linear_trend_sigma',
+                        'magnitude_percentage_ratio_20_10',
+                        'magnitude_percentage_ratio_40_5',
+                        'maximum_slope',
+                        'mean',
+                        'mean_variance',
+                        'median',
+                        'median_absolute_deviation',
+                        'median_buffer_range_percentage_10',
+                        'percent_amplitude',
+                        'skew',
+                        'standard_deviation',
+                        'stetson_K',
+                        'weighted_mean'])
+    
+    for i, bband in enumerate(list('ugrizy')):
+        select_filter_table = select_table['lc_features'].iloc[0][f'{bband}']
+        if select_filter_table:
+            feature_table_all.loc[i] = {
+                "band": bband,
+                "amplitude": select_filter_table['amplitude'],
+                "anderson_darling_normal": select_filter_table['anderson_darling_normal'],
+                "beyond_1_std": select_filter_table['beyond_1_std'],
+                "chi2": select_filter_table['chi2'],
+                "cusum": select_filter_table['cusum'],
+                "inter_percentile_range_10": select_filter_table['inter_percentile_range_10'],
+                "kurtosis": select_filter_table['kurtosis'],
+                "linear_fit_reduced_chi2": select_filter_table['linear_fit_reduced_chi2'],
+                "linear_fit_slope": select_filter_table['linear_fit_slope'],
+                "linear_fit_slope_sigma": select_filter_table['linear_fit_slope_sigma'],
+                "linear_trend": select_filter_table['linear_trend'],
+                "linear_trend_noise": select_filter_table['linear_trend_noise'],
+                "linear_trend_sigma": select_filter_table['linear_trend_sigma'],
+                "magnitude_percentage_ratio_20_10": select_filter_table['magnitude_percentage_ratio_20_10'],
+                "magnitude_percentage_ratio_40_5": select_filter_table['magnitude_percentage_ratio_40_5'],
+                "maximum_slope": select_filter_table['maximum_slope'],
+                "mean": select_filter_table['mean'],
+                "mean_variance": select_filter_table['mean_variance'],
+                "median": select_filter_table['median'],
+                "median_absolute_deviation": select_filter_table['median_absolute_deviation'],
+                "median_buffer_range_percentage_10": select_filter_table['median_buffer_range_percentage_10'],
+                "percent_amplitude": select_filter_table['percent_amplitude'],
+                "skew": select_filter_table['skew'],
+                "standard_deviation": select_filter_table['standard_deviation'],
+                "stetson_K": select_filter_table['stetson_K'],
+                "weighted_mean": select_filter_table['weighted_mean']
+            }
+
+    return feature_table_all
 
 def alert_lc(table, diaObjectId, alert_lc_type='prvDiaSources', flux_ref='scienceFlux', add_mags=True, band='r'):
     """For a given diaObjectId, retrieve light curve data.
