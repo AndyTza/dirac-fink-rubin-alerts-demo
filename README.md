@@ -6,7 +6,7 @@ Utilities for ingesting, extracting, and plotting light curves from FINK data tr
 `pip install tqdm`
 
 ## Google-Doc Guide
-[Google Doc](google.com)
+[Google Doc](https://docs.google.com/document/d/1AF9HI2HVt_K0y_qU7kSPm0DLDTE9n7e9x_DgV9KoeKE/edit?usp=sharing)
 
 
 ## References

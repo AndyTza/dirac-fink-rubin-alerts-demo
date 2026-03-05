@@ -4,6 +4,9 @@ from tqdm import tqdm
 import astropy.units as u
 import matplotlib.pyplot as plt
 
+# not reccomended to suppress any warnings
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSources', 'prvDiaForcedSources', 'lc_features', 'xm']):
     """Ingest data from FINK data transfer of Rubin alerts. Returns stitched pd.DataFrame
@@ -24,7 +27,7 @@ def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSou
     See https://lsst.fink-portal.org/schemas for more information.
     """
     # generate all paths
-    parquet_files = [os.path.join(file_path, file) for file in os.listdir(file_path) if file.endswith(f'.{extension}')][0:2]
+    parquet_files = [os.path.join(file_path, file) for file in os.listdir(file_path) if file.endswith(f'.{extension}')]
 
     if not parquet_files:
         raise FileNotFoundError(f"No files with extension '{extension}' found in {file_path}.")
@@ -65,7 +68,7 @@ def alert_lc(table, diaObjectId, alert_lc_type='prvDiaSources', flux_ref='scienc
     """
     data = table[table['diaObjectId'] == diaObjectId][alert_lc_type]
 
-    lc = pd.json_normalize(list(data[0]))
+    lc = pd.json_normalize(list(data.iloc[0])) # convert list of dicts to dataframe
     
     if add_mags: 
         lc = lc.assign(mag=lc[f'{flux_ref}'].apply(lambda x: (x * u.nJy).to(u.ABmag).value),

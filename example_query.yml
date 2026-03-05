@@ -1,0 +1,10 @@
+blocks:
+- b_xmatched_gaia_star
+content:
+- Medium packet
+dates:
+  startdate: '2026-02-26'
+  stopdate: '2026-02-27'
+extra_cond:
+- diaObject.nDiaSources > 250
+filters: []
