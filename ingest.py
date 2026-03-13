@@ -1,7 +1,7 @@
 import pandas as pd
 import os 
 from tqdm import tqdm
-import astropy.units as u
+import astropy.units as unit
 import matplotlib.pyplot as plt
 
 # not reccomended to suppress any warnings
@@ -87,8 +87,12 @@ def unpack_lc_features(table, diaObjectId):
                         'weighted_mean'])
     
     for i, bband in enumerate(list('ugrizy')):
-        select_filter_table = select_table['lc_features'].iloc[0][f'{bband}']
-        if select_filter_table:
+        try:
+            select_filter_table = select_table['lc_features'].iloc[0][f'{bband}']
+        except:
+            continue
+
+        if select_filter_table is not None:
             feature_table_all.loc[i] = {
                 "band": bband,
                 "amplitude": select_filter_table['amplitude'],
@@ -146,7 +150,7 @@ def alert_lc(table, diaObjectId, alert_lc_type='prvDiaSources', flux_ref='scienc
     lc = pd.json_normalize(list(data.iloc[0])) # convert list of dicts to dataframe
     
     if add_mags: 
-        lc = lc.assign(mag=lc[f'{flux_ref}'].apply(lambda x: (x * u.nJy).to(u.ABmag).value),
+        lc = lc.assign(mag=lc[f'{flux_ref}'].apply(lambda x: (x * unit.nJy).to(unit.ABmag).value),
         magErr=lc[f'{flux_ref}Err'].apply(lambda x: 1.086 * (x / lc[f'{flux_ref}'].iloc[0])))
 
     if band=='all':
