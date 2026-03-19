@@ -3,12 +3,13 @@ import os
 from tqdm import tqdm
 import astropy.units as unit
 import matplotlib.pyplot as plt
+from astropy.time import Time
 
 # not reccomended to suppress any warnings
 import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning)
 
-def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSources', 'prvDiaForcedSources', 'lc_features', 'xm']):
+def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSources', 'prvDiaForcedSources', 'lc_features', 'xm', 'timestamp'], latest_only=True):
     """Ingest data from FINK data transfer of Rubin alerts. Returns stitched pd.DataFrame
     of downloaded alerts. Assumes a `Medium packet` content.
 
@@ -42,7 +43,18 @@ def ingest_data(file_path, extension='parquet', columns=['diaObject', 'prvDiaSou
     # check if combined has diaObjectId; if not add it
     if 'diaObjectId' not in combined.columns:
         combined['diaObjectId'] = [val['diaObjectId'] for val in combined['diaObject']]
-    
+
+    # add MJD timestamp
+    combined['MJD_stamp'] = Time(list(combined['timestamp'].to_numpy())).mjd
+
+    if latest_only:
+        # if user wants ONLY the latest alerts then sort by the MJD stamp
+        combined = (
+            combined.sort_values('MJD_stamp')
+                .drop_duplicates(subset='diaObjectId', keep='last')
+                .reset_index(drop=True)
+        )
+
     return combined
 
 def unpack_lc_features(table, diaObjectId):
